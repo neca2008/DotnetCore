@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProAgil.WebApi.Data;
+using ProAgil.WebApi.Model;
 
 namespace ProAgil.API.Controllers
 {
@@ -10,18 +14,44 @@ namespace ProAgil.API.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        public readonly DataContext _context;
+        public ValuesController(DataContext context)
+        {
+            _context = context;
+
+        }
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<IActionResult> Get()
         {
-            return new string[] { "value1", "value2" };
+            try
+            {
+                var results = await _context.Events.ToListAsync();
+                return Ok( results);
+            }
+            catch (System.Exception)
+            {
+                
+               return this.StatusCode(StatusCodes.Status500InternalServerError, "DB failed");
+            }
+            
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            try
+            {
+                var results = await _context.Events.FirstOrDefaultAsync(x => x.EventId == id);
+                return Ok( results);
+            }
+            catch (System.Exception)
+            {
+                
+               return this.StatusCode(StatusCodes.Status500InternalServerError, "DB failed");
+            }
+    
         }
 
         // POST api/values
